@@ -17,7 +17,7 @@ const SmsForm = () => {
         try {
             const res = await axios.post('http://localhost:5000/send-sms', { to, message });
             if (res.data.success) {
-                setResponse(`SMS sent successfully! Message SID: ${res.data.messageSid}`);
+                setResponse(`SMS sent successfully!`);
                 setIsSuccess(true);
             } else {
                 setResponse(`Error: ${res.data.error}`);
