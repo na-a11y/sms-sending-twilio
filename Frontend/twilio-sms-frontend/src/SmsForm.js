@@ -5,63 +5,63 @@ import './SmsForm.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
-const SmsForm = () => {
-    const [to, setTo] = useState('');
-    const [message, setMessage] = useState('');
-    const [response, setResponse] = useState('');
-    const [isSuccess, setIsSuccess] = useState(false);
 
-    const handleSendSms = async (e) => {
-        e.preventDefault();
+const App = () => {
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
-        try {
-            const res = await axios.post('http://localhost:5000/send-sms', { to, message });
-            if (res.data.success) {
-                setResponse(`SMS sent successfully!`);
-                setIsSuccess(true);
-            } else {
-                setResponse(`Error: ${res.data.error}`);
-                setIsSuccess(false);
-            }
-        } catch (error) {
-            setResponse('An error occurred while sending the SMS.');
-            setIsSuccess(false);
-        }
-    };
+  const handleSendSms = async (e) => {
+    e.preventDefault();
 
-    return (
-        <div className="sms-container">
-            <h1>Send SMS with Twilio</h1>
-            <form onSubmit={handleSendSms}>
-                <label htmlFor="to">Recipient Phone Number:</label>
-                <input
-                    type="text"
-                    id="to"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    placeholder="+91 Enter your Mobile number Here"
-                    required
-                />
-                <label htmlFor="message">Message:</label>
-                <textarea
-                    id="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter your message here..."
-                    required
-                />
-                <button type="submit">
-                    <FontAwesomeIcon icon={faPaperPlane} />
-                    Send SMS
-                </button>
-            </form>
-            {response && (
-                <div className={`response ${isSuccess ? 'success' : 'error'}`}>
-                    {response}
-                </div>
-            )}
-        </div>
-    );
+    try {
+      const res = await fetch('http://localhost:5000/send-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber, message }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setResponse('SMS sent successfully!');
+        setIsSuccess(true);
+      } else {
+        setResponse(`Error: ${data.error}`);
+        setIsSuccess(false);
+      }
+    } catch (error) {
+      setResponse('An error occurred while sending the SMS.');
+      setIsSuccess(false);
+    }
+  };
+
+  return (
+    <div className="sms-container">
+      <h1>Send SMS</h1>
+      <form onSubmit={handleSendSms}>
+        <label>Phone Number:</label>
+        <input
+          type="text"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          placeholder="Enter phone number"
+          required
+        />
+        <label>Message:</label>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Enter your message"
+          required
+        />
+        <button type="submit">Send SMS</button>
+      </form>
+      {response && <div className={`response ${isSuccess ? 'success' : 'error'}`}>{response}</div>}
+    </div>
+  );
 };
 
-export default SmsForm;
+export default App;

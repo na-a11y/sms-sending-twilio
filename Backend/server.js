@@ -1,40 +1,44 @@
 const express = require('express');
 const twilio = require('twilio');
-const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();  // Load environment variables
 
-dotenv.config();
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 1;
 
 const app = express();
-const port = 5000; // Backend will run on port 5000
 
+// CORS Middleware
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? 'https://your-frontend-url.vercel.app' : 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+  }));
 
 // Twilio credentials from .env file
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
-// Middleware
-app.use(cors()); // Allow requests from other origins
-app.use(express.json());
+app.use(bodyParser.json());
 
 
 // Endpoint to send SMS
+
 app.post('/send-sms', (req, res) => {
-    const { to, message } = req.body;
-
+    const { phoneNumber, message } = req.body;
+  
     client.messages
-        .create({
-            body: message,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: '+919877178891',
-        })
-        .then((message) => res.json({ success: true, messageSid: message.sid }))
-        .catch((error) => res.json({ success: false, error: error.message }));
-});
+      .create({
+        body: message,
+        to: phoneNumber,
+        from: process.env.TWILIO_PHONE_NUMBER
+      })
+      .then((message) => res.json({ success: true }))
+      .catch((error) => res.json({ success: false, error }));
+  });
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+ 
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
